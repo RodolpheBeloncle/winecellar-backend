@@ -43,7 +43,7 @@ router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET USER ORDERS
-router.get('/find/:userId', async (req, res) => {
+router.get('/find/:userId',verifyTokenAndAdmin, async (req, res) => {
   const userId = req.params.userId;
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
