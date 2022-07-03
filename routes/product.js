@@ -1,28 +1,50 @@
-const Product = require("../models/Product");
-const {
-  verifyToken,
-  verifyTokenAndAuthorization,
-  verifyTokenAndAdmin,
-} = require("./verifyToken");
+const Product = require('../models/Product');
+const { verifyToken, verifyTokenAndAdmin } = require('./verifyToken');
+const Joi = require('joi');
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/img' });
 
-const router = require("express").Router();
+const router = require('express').Router();
+
+const inputValidator = Joi.object({
+  title: Joi.string().allow(null, ''),
+  desc: Joi.string().allow(null, ''),
+  vintage: Joi.string().allow(null, ''),
+  size: Joi.string().allow(null, ''),
+  color: Joi.string().allow(null, ''),
+  quantity: Joi.number().allow(null, ''),
+  price: Joi.number().allow(null, ''),
+});
 
 //CREATE
 
-router.post("/", async (req, res) => {
-  const newProduct = new Product(req.body);
+router.post(
+  '/',
+  verifyTokenAndAdmin,
+  upload.single('img'),
+  async (req, res) => {
+    const { value: newProduct, error } = inputValidator.validate(req.body);
 
-  try {
-    const savedProduct = await newProduct.save();
-    res.status(200).json(savedProduct);
-  } catch (err) {
-    res.status(500).json(err);
+    if (error) {
+      res.status(400).json(error);
+    }
+
+    try {
+      const addProduct = new Product({
+        ...newProduct,
+        img: req.file.path,
+      });
+
+      const createdProd = await addProduct.save();
+      res.status(201).json({ message: createdProd });
+    } catch (err) {
+      res.status(400).json(err);
+    }
   }
-});
+);
 
 //UPDATE
-router.put("/:id", verifyTokenAndAdmin, async (req, res) => {
-  
+router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
@@ -38,17 +60,17 @@ router.put("/:id", verifyTokenAndAdmin, async (req, res) => {
 });
 
 //DELETE
-router.delete("/:id", verifyTokenAndAdmin, async (req, res) => {
+router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json("Product has been deleted...");
+    res.status(200).json('Product has been deleted...');
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
 //GET PRODUCT
-router.get("/find/:id", async (req, res) => {
+router.get('/find/:id', async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
     res.status(200).json(product);
@@ -58,7 +80,7 @@ router.get("/find/:id", async (req, res) => {
 });
 
 //GET ALL PRODUCTS
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
   const qNew = req.query.new;
   const qCategory = req.query.category;
   try {
