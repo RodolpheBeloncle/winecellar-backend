@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 
-const userSchema = new mongoose.Schema(
+const customerSchema = new mongoose.Schema(
   {
-    username: {
+    customer: {
       type: String,
       required: true,
       minLength: 3,
@@ -17,22 +17,21 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       unique: true,
     },
-    password: {
+    phone: {
       type: String,
-      required: true,
-      max: 1024,
-      minlength: 6,
+      default: '',
     },
-    isAdmin: {
-      type: Boolean,
-      default: false,
+    adress: {
+      type: String,
+      default: '',
     },
     img: {
       type: String,
       default: '',
     },
-    likes: {
-      type: [String],
+    country: {
+      type: String,
+      default: '',
     },
   },
   {
@@ -40,6 +39,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-const UserModel = mongoose.model('user', userSchema);
+const CustomerModel = mongoose.model('customer', customerSchema);
 
-module.exports = UserModel;
+module.exports = CustomerModel;

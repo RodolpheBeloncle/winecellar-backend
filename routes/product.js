@@ -11,7 +11,7 @@ const inputValidator = Joi.object({
   desc: Joi.string().allow(null, ''),
   vintage: Joi.string().allow(null, ''),
   size: Joi.string().allow(null, ''),
-  color: Joi.string().allow(null, ''),
+  type: Joi.string().allow(null, ''),
   quantity: Joi.number().allow(null, ''),
   price: Joi.number().allow(null, ''),
 });
@@ -26,7 +26,7 @@ router.post(
     const { value: newProduct, error } = inputValidator.validate(req.body);
 
     if (error) {
-      res.status(400).json(error);
+      return res.status(400).json(error);
     }
 
     try {
@@ -36,9 +36,9 @@ router.post(
       });
 
       const createdProd = await addProduct.save();
-      res.status(201).json({ message: createdProd });
+      return res.status(201).json({ message: createdProd });
     } catch (err) {
-      res.status(400).json(err);
+      return res.status(400).json(err);
     }
   }
 );
