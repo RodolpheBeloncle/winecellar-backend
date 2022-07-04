@@ -13,6 +13,7 @@ const inputValidator = Joi.object({
   size: Joi.string().allow(null, ''),
   type: Joi.string().allow(null, ''),
   quantity: Joi.number().allow(null, ''),
+  country: Joi.string().allow(null, ''),
   price: Joi.number().allow(null, ''),
 });
 
