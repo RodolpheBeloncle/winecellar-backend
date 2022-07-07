@@ -42,9 +42,9 @@ router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
-//GET CUSTOMER ORDERS
+//GET User Order from last 6 months[_id] sales
 router.get('/find/:userId',verifyTokenAndAdmin, async (req, res) => {
-  const customerId = req.params.customerId;
+  const userId = req.params.userId;
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
   const previousMonth = new Date(new Date().setMonth(lastMonth.getMonth() - 1));
@@ -54,7 +54,7 @@ router.get('/find/:userId',verifyTokenAndAdmin, async (req, res) => {
         $match: {
           createdAt: { $gte: previousMonth },
         },
-        $match: { customerId: customerId },
+        $match: { userId: userId },
       },
       {
         $project: {
@@ -88,7 +88,7 @@ router.get('/', verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
-// GET MONTHLY INCOME
+// GET MONTHLY[_id] INCOME WHEN PRODUCT /id Have been sold
 router.get('/income', async (req, res) => {
   const productId = req.query.pid;
   const date = new Date();
@@ -123,5 +123,6 @@ router.get('/income', async (req, res) => {
     res.status(500).json(err);
   }
 });
+
 
 module.exports = router;

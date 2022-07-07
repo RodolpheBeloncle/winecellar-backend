@@ -10,8 +10,10 @@ const authRoute = require('./routes/auth');
 const productRoute = require('./routes/product');
 const cartRoute = require('./routes/cart');
 const orderRoute = require('./routes/order');
-const stripeRoute = require('./routes/stripe');
+const pdf = require('html-pdf');
 const cors = require('cors');
+
+const pdfTemplate = require('./document');
 
 mongoose
   .connect(
@@ -39,7 +41,22 @@ app.use('/api/users', userRoute);
 app.use('/api/products', productRoute);
 app.use('/api/carts', cartRoute);
 app.use('/api/orders', orderRoute);
-app.use('/api/checkout', stripeRoute);
+
+
+app.post('/api/create-pdf', (req, res) => {
+  pdf.create(pdfTemplate(req.body), {}).toFile('result.pdf', (err) => {
+      if(err) {
+          res.send(Promise.reject());
+      }
+
+      res.send(Promise.resolve());
+  });
+});
+
+app.get('/api/fetch-pdf', (req, res) => {
+  res.sendFile(`${__dirname}/result.pdf`)
+})
+
 
 app.listen(process.env.PORT || 8000, () => {
   console.log('Backend server is running!');

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const OrderSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true },
-    customerId: { type: String, default: 'NC' },
+    customer: { type: String, default: 'NC' },
     products: [
       {
         productId: {
@@ -15,7 +15,7 @@ const OrderSchema = new mongoose.Schema(
         },
       },
     ],
-
+    paymentMethod: { type: String, default: 'NC' },
     amount: { type: Number, required: true },
     address: { type: String, default: 'no adress provided' },
     status: { type: String, default: 'pending' },
