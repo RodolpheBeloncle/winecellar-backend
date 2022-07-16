@@ -1,6 +1,7 @@
-module.exports = ({ name, price1, price2, receiptId }) => {
-    const today = new Date();
-return `
+module.exports = ({ name, receiptId, orderCart }) => {
+  const today = new Date();
+
+  return `
     <!doctype html>
     <html>
        <head>
@@ -86,10 +87,12 @@ return `
                    <td colspan="2">
                       <table>
                          <tr>
-                            <td class="title"><img  src="https://i2.wp.com/cleverlogos.co/wp-content/uploads/2018/05/reciepthound_1.jpg?fit=800%2C600&ssl=1"
-                               style="width:100%; max-width:156px;"></td>
+                            <td class="title"><a href="https://www.residence-le-tonneau.fr/"><img  src="https://www.residence-le-tonneau.fr/wp-content/uploads/2018/07/logo-150x90.png"
+                               style="width:100%; max-width:156px;"></a></td>
                             <td>
-                               Datum: ${`${today.getDate()}. ${today.getMonth() + 1}. ${today.getFullYear()}.`}
+                               Date: ${`${today.getDate()}/ ${
+                                 today.getMonth() + 1
+                               }/ ${today.getFullYear()}`}
                             </td>
                          </tr>
                       </table>
@@ -100,7 +103,7 @@ return `
                       <table>
                          <tr>
                             <td>
-                               Customer name: ${name}
+                               Customer: ${name}
                             </td>
                             <td>
                                Receipt number: ${receiptId}
@@ -110,20 +113,25 @@ return `
                    </td>
                 </tr>
                 <tr class="heading">
-                   <td>Bought items:</td>
+                   <td>Bought wine:</td>
                    <td>Price</td>
-                </tr>
-                <tr class="item">
-                   <td>First item:</td>
-                   <td>${price1}$</td>
-                </tr>
-                <tr class="item">
-                   <td>Second item:</td>
-                   <td>${price2}$</td>
-                </tr>
+                </tr>      
+               ${orderCart
+                 .map(
+                   (item) =>
+                     `<tr class="item">
+                        <td>${item.title}</td>
+                        <td>${item.price}€</td>
+                     </tr>
+                     `
+                 )
+                 .join('')}   
              </table>
              <br />
-             <h1 class="justify-center">Total price: ${parseInt(price1) + parseInt(price2)}$</h1>
+             <h1 class="justify-center">Total amount: ${orderCart
+               .map((item) => item.quantity * item.price)
+               .reduce((acc, value) => acc + value)
+               .toFixed(2)}€</h1>
           </div>
        </body>
     </html>

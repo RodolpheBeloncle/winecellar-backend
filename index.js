@@ -44,6 +44,7 @@ app.use('/api/orders', orderRoute);
 
 
 app.post('/api/create-pdf', (req, res) => {
+  console.log(req.body)
   pdf.create(pdfTemplate(req.body), {}).toFile('result.pdf', (err) => {
       if(err) {
           res.send(Promise.reject());
