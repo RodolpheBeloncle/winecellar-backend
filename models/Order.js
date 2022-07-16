@@ -15,10 +15,10 @@ const OrderSchema = new mongoose.Schema(
         },
       },
     ],
-    paymentMethod: { type: String, default: 'NC' },
+    // paymentMethod: { type: String, default: 'NC' },
     amount: { type: Number, required: true },
-    address: { type: String, default: 'no adress provided' },
-    status: { type: String, default: 'pending' },
+    // address: { type: String, default: 'no adress provided' },
+    // status: { type: String, default: 'pending' },
   },
   { timestamps: true }
 );

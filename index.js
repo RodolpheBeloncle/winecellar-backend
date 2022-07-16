@@ -42,22 +42,19 @@ app.use('/api/products', productRoute);
 app.use('/api/carts', cartRoute);
 app.use('/api/orders', orderRoute);
 
-
 app.post('/api/create-pdf', (req, res) => {
-  console.log(req.body)
   pdf.create(pdfTemplate(req.body), {}).toFile('result.pdf', (err) => {
-      if(err) {
-          res.send(Promise.reject());
-      }
+    if (err) {
+      res.send(Promise.reject());
+    }
 
-      res.send(Promise.resolve());
+    res.send(Promise.resolve());
   });
 });
 
 app.get('/api/fetch-pdf', (req, res) => {
-  res.sendFile(`${__dirname}/result.pdf`)
-})
-
+  res.sendFile(`${__dirname}/result.pdf`);
+});
 
 app.listen(process.env.PORT || 8000, () => {
   console.log('Backend server is running!');
