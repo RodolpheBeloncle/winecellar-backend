@@ -3,6 +3,7 @@ const { verifyToken, verifyTokenAndAdmin } = require('./verifyToken');
 const Joi = require('joi');
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/img' });
+const ObjectID = require('mongoose').Types.ObjectId;
 
 const router = require('express').Router();
 
@@ -58,6 +59,40 @@ router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
     res.status(200).json(updatedProduct);
   } catch (err) {
     res.status(500).json(err);
+  }
+});
+
+// update multiple product quantity
+router.post('/many', verifyTokenAndAdmin, async (req, res) => {
+  const { updates } = req.body;
+
+  try {
+    let updateArr = [];
+
+    updates.map((item) => {
+      updateArr.push({
+        updateOne: {
+          filter: {
+            _id: ObjectID(item._id),
+          },
+          update: {
+            $set: {
+              'quantity': item.quantity,
+            },
+          },
+        },
+      });
+    });
+
+    console.log(updateArr);
+
+    await Product.bulkWrite(updateArr);
+    res.status(200).json({});
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(400)
+      .json({ msg: 'Couldnt update wine stock' });
   }
 });
 

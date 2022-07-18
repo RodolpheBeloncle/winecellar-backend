@@ -114,14 +114,18 @@ module.exports = ({ name, receiptId, orderCart }) => {
                 </tr>
                 <tr class="heading">
                    <td>Bought wine:</td>
-                   <td>Price</td>
+                   <td>Quantity</td>
+                   <td>Unit Price</td>
+                   <td>Sub total</td>
                 </tr>      
                ${orderCart
                  .map(
                    (item) =>
                      `<tr class="item">
                         <td>${item.title}</td>
-                        <td>${item.price}€</td>
+                        <td>${item.quantity}</td>
+                        <td>${item.price}</td>
+                        <td>${item.price * item.quantity}€</td>
                      </tr>
                      `
                  )

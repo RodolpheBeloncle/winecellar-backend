@@ -42,8 +42,8 @@ router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
-//GET User Order from last 6 months[_id] sales
-router.get('/find/:userId',verifyTokenAndAdmin, async (req, res) => {
+//GET User Order performance and balance from last 6 months[_id] sales
+router.get('/find/:userId', verifyTokenAndAdmin, async (req, res) => {
   const userId = req.params.userId;
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
@@ -75,8 +75,6 @@ router.get('/find/:userId',verifyTokenAndAdmin, async (req, res) => {
     res.status(500).json(err);
   }
 });
-
-
 
 // GET ALL
 router.get('/', verifyTokenAndAdmin, async (req, res) => {
@@ -124,5 +122,21 @@ router.get('/income', async (req, res) => {
   }
 });
 
+router.get('/latest/:userId', verifyTokenAndAdmin, async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const orders = await Order.aggregate([
+      {
+        $match: { userId: userId },
+      },
+    ])
+      .sort({ createdAt: -1 })
+      .limit(5);
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 module.exports = router;
