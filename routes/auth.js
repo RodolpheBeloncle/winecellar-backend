@@ -60,13 +60,13 @@ router.post('/login', async (req, res) => {
       { expiresIn: '3d' }
     );
 
-    const { username, profilPic, isAdmin } = user;
+    const { username, img, isAdmin } = user;
 
     res.status(200).cookie('token', accessToken).json({
       currentUser: true,
-      userId : user._id,
+      userId: user._id,
       username: username,
-      profilPic: profilPic,
+      img: img,
       isAdmin: isAdmin,
     });
   } catch (err) {
