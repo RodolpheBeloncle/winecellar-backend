@@ -77,7 +77,7 @@ router.post(
         },
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
-      const { img, name, email, phone, adress, country } = updatedCustomer;
+      const { img, customerName, email, phone, adress, country } = updatedCustomer;
       res
         .status(200)
         .json({ img, customerName, email, phone, adress, country });
