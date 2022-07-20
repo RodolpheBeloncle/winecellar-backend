@@ -27,8 +27,7 @@ router.post('/register', async (req, res) => {
       message: "'Successfully registered 😏 🍀'",
     });
   } catch (err) {
-    const errors = await registerErrors(err);
-    res.status(500).json({ message: errors });
+    res.status(500).json({ message: err });
   }
 });
 

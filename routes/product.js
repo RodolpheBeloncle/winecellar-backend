@@ -38,9 +38,10 @@ router.post(
         img: req.file.path,
       });
 
-      const createdProd = await addProduct.save();
-      return res.status(201).json({ message: createdProd });
+      const createdProduct = await addProduct.save();
+      return res.status(201).json({ message: createdProduct });
     } catch (err) {
+      console.log(err);
       return res.status(400).json(err);
     }
   }
@@ -77,7 +78,7 @@ router.post('/many', verifyTokenAndAdmin, async (req, res) => {
           },
           update: {
             $set: {
-              'quantity': item.quantity,
+              quantity: item.quantity,
             },
           },
         },
@@ -90,9 +91,7 @@ router.post('/many', verifyTokenAndAdmin, async (req, res) => {
     res.status(200).json({});
   } catch (err) {
     console.log(err);
-    return res
-      .status(400)
-      .json({ msg: 'Couldnt update wine stock' });
+    return res.status(400).json({ msg: 'Couldnt update wine stock' });
   }
 });
 

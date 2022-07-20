@@ -1,37 +1,61 @@
 const Customer = require('../models/Customer');
+const Joi = require('joi');
 const { verifyToken, verifyTokenAndAdmin } = require('./verifyToken');
 const ObjectID = require('mongoose').Types.ObjectId;
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/profil' });
+const upload = multer({ dest: 'uploads/img' });
 
 const router = require('express').Router();
 
-//UPDATE
-router.put('/:id', async (req, res) => {
-  if (req.body.password) {
-    req.body.password = CryptoJS.AES.encrypt(
-      req.body.password,
-      process.env.PASS_SEC
-    ).toString();
-  }
-
-  try {
-    const updatedCustomer = await Customer.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: req.body,
-      },
-      { new: true }
-    );
-    res.status(200).json(updatedCustomer);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+const inputValidator = Joi.object({
+  customerName: Joi.string().allow(null, ''),
+  email: Joi.string().required(),
+  phone: Joi.string().allow(null, ''),
+  adress: Joi.string().allow(null, ''),
+  country: Joi.string().allow(null, ''),
 });
+
+// create new customer
+router.post(
+  '/new',
+  verifyTokenAndAdmin,
+  upload.single('img'),
+  async (req, res) => {
+    const { value: newCustomer, error } = inputValidator.validate(req.body);
+
+    if (error) {
+      return res.status(400).json(error);
+    }
+
+    try {
+      const customerExist = await Customer.findOne({
+        email: newCustomer.email,
+      });
+
+      if (customerExist) {
+        res.status(403).json({
+          message: 'user already exist',
+        });
+      }
+      const createCustomer = new Customer({
+        ...newCustomer,
+        img: req.file.path,
+      });
+
+      await createCustomer.save();
+      res.status(201).json({
+        message: "' Customer Successfully registered 😏 🍀'",
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: err });
+    }
+  }
+);
 
 // update CustomerProfil
 router.post(
-  '/updateProfil/:id',
+  '/update/:id',
   verifyTokenAndAdmin,
   upload.single('profilPic'),
   async (req, res) => {
@@ -41,16 +65,22 @@ router.post(
     }
 
     try {
-      const updatedProfil = await Customer.findOneAndUpdate(
+      const updatedCustomer = await Customer.findOneAndUpdate(
         { _id: CustomerId },
         {
           img: req.file.path,
-          name: req.body.name,
+          customerName,
+          email,
+          phone,
+          adress,
+          country,
         },
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
-      const { img, name } = updatedProfil;
-      res.status(200).json({ img, name });
+      const { img, name, email, phone, adress, country } = updatedCustomer;
+      res
+        .status(200)
+        .json({ img, customerName, email, phone, adress, country });
     } catch (error) {
       console.log(error);
       if (error.code === 'LIMIT_UNEXPECTED_FILE') {
@@ -75,7 +105,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
     const Customer = await Customer.findById(req.params.id);
-    const { password, ...others } = Customer._doc;
+    const { ...others } = Customer._doc;
     res.status(200).json(others);
   } catch (err) {
     res.status(500).json(err);
@@ -90,33 +120,6 @@ router.get('/', verifyTokenAndAdmin, async (req, res) => {
       ? await Customer.find().sort({ _id: -1 }).limit(5)
       : await Customer.find();
     res.status(200).json(Customers);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-//GET Customer STATS
-
-router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
-  const date = new Date();
-  const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
-
-  try {
-    const data = await Customer.aggregate([
-      { $match: { createdAt: { $gte: lastYear } } },
-      {
-        $project: {
-          month: { $month: '$createdAt' },
-        },
-      },
-      {
-        $group: {
-          _id: '$month',
-          total: { $sum: 1 },
-        },
-      },
-    ]);
-    res.status(200).json(data);
   } catch (err) {
     res.status(500).json(err);
   }
