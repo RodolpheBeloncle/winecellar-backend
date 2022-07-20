@@ -8,7 +8,7 @@ dotenv.config();
 const userRoute = require('./routes/user');
 const authRoute = require('./routes/auth');
 const productRoute = require('./routes/product');
-const cartRoute = require('./routes/cart');
+const customerRoute = require('./routes/customer');
 const orderRoute = require('./routes/order');
 const pdf = require('html-pdf');
 const cors = require('cors');
@@ -39,8 +39,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoute);
 app.use('/api/users', userRoute);
 app.use('/api/products', productRoute);
-app.use('/api/carts', cartRoute);
 app.use('/api/orders', orderRoute);
+app.use('/api/customers', customerRoute);
 
 app.post('/api/create-pdf', (req, res) => {
   pdf.create(pdfTemplate(req.body), {}).toFile('result.pdf', (err) => {

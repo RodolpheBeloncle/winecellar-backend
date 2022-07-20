@@ -3,7 +3,7 @@ const { isEmail } = require('validator');
 
 const customerSchema = new mongoose.Schema(
   {
-    customer: {
+    name: {
       type: String,
       required: true,
       minLength: 3,
