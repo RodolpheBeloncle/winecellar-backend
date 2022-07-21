@@ -1,12 +1,12 @@
 const router = require('express').Router();
-const User = require('../models/user');
+const User = require('../models/User');
 
 const jwt = require('jsonwebtoken');
 // const {body, checkSchema, validationResult} = require('express-validator');
 const argon2 = require('argon2');
 
 router.post('/register', async (req, res) => {
-  const { email, password, username } = req.body;
+  const { email } = req.body;
 
   try {
     const userExist = await User.findOne({ email: email });
@@ -17,9 +17,8 @@ router.post('/register', async (req, res) => {
       });
     }
     const newUser = new User({
-      username,
-      email,
-      password: await argon2.hash(password),
+      ...req.body,
+      password: await argon2.hash(req.body.password),
     });
 
     await newUser.save();
@@ -67,6 +66,7 @@ router.post('/login', async (req, res) => {
       username: username,
       img: img,
       isAdmin: isAdmin,
+      publicId: user._id,
     });
   } catch (err) {
     res.status(401).json({ message: err });

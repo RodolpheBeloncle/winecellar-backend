@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 
-const userSchema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     username: {
       type: String,
@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema(
       maxLength: 55,
       unique: true,
     },
+
     email: {
       type: String,
       required: true,
@@ -27,19 +28,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    img: {
-      type: String,
-      default: '',
-    },
+
     likes: {
       type: [String],
     },
+    img: { type: String, default: '' },
+    publicId: { type: String, default: '' },
   },
   {
     timestamps: true,
   }
 );
 
-const UserModel = mongoose.model('user', userSchema);
-
-module.exports = UserModel;
+module.exports = mongoose.model('User', UserSchema);

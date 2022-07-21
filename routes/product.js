@@ -1,29 +1,14 @@
 const Product = require('../models/Product');
 const { verifyTokenAndAdmin } = require('./verifyToken');
 const Joi = require('joi');
-const multer = require('multer');
-const fs = require('fs');
-const { promisify } = require('util');
-const unlinkAsync = promisify(fs.unlink);
+const upload = require('../middlewares/multer');
+const unlinkAsync = require('../utils/unlinkAsync');
 const {
   uploadToCloudinary,
   removeFromCloudinary,
 } = require('../config/cloudinary');
 
 const ObjectID = require('mongoose').Types.ObjectId;
-
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/img');
-  },
-  filename(req, file, cb) {
-    cb(null, `${file.fieldname}-${Date.now()}`);
-  },
-});
-
-const dest = 'uploads/img';
-const limits = { fileSize: 1000 * 1000 * 4 }; // limit to 4mb
-const upload = multer({ dest, limits, storage }).single('img');
 
 const router = require('express').Router();
 
@@ -72,13 +57,20 @@ router.post('/', verifyTokenAndAdmin, upload, async (req, res) => {
 //UPDATE
 router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
+    // find product
+    const product = await Product.findOne({ _id: req.params.id });
+    // find it's public_id
+    const publicId = product.publicId;
+    // remove img from cloudinary
+    await removeFromCloudinary(publicId);
+    // upload image from cloudinary
+    const data = await uploadToCloudinary(req.file.path, 'product-images');
     const updatedProduct = await Product.findByIdAndUpdate(
-      req.params.id,
-      {
-        $set: req.body,
-      },
-      { new: true }
+      { _id: req.params.id },
+      { ...req.body, img: data.url, publicId: data.public_id },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+    await unlinkAsync(req.file.path);
     res.status(200).json(updatedProduct);
   } catch (err) {
     res.status(500).json(err);

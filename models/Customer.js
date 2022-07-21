@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { isEmail } = require('validator');
 
-const customerSchema = new mongoose.Schema(
+const CustomerSchema = new mongoose.Schema(
   {
     customerName: {
       type: String,
@@ -25,10 +25,8 @@ const customerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    img: {
-      type: String,
-      default: '',
-    },
+    img: { type: String, require: false },
+    publicId: { type: String },
     country: {
       type: String,
       default: '',
@@ -39,6 +37,6 @@ const customerSchema = new mongoose.Schema(
   }
 );
 
-const CustomerModel = mongoose.model('customer', customerSchema);
+module.exports = mongoose.model('Customer', CustomerSchema);
 
-module.exports = CustomerModel;
+
