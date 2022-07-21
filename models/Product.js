@@ -2,9 +2,10 @@ const mongoose = require('mongoose');
 
 const ProductSchema = new mongoose.Schema(
   {
-    title: { type: String, default: 'NC' },
+    title: { type: String, required: true, trim: true },
     desc: { type: String, default: 'NC' },
-    img: { type: String, default: '' },
+    img: { type: String, require: false },
+    publicId: { type: String },
     vintage: { type: String, default: 'NC' },
     country: { type: String, default: 'NC' },
     size: { type: String, default: 'NC' },

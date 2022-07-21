@@ -1,16 +1,8 @@
 // const multer = require('multer');
 
-// // set storage
-// var storage = multer.diskStorage({
-//     destination : function ( req , file , cb ){
-//         cb(null, 'uploads')
-//     },
-//     filename : function (req, file , cb){
-//         // image.jpg
-//         var ext = file.originalname.substr(file.originalname.lastIndexOf('.'));
-
-//         cb(null, file.fieldname + '-' + Date.now() + ext)
-//     }
-// })
-
-// module.exports = store = multer({ storage : storage })
+// const storage = multer.memoryStorage();
+// // multer config
+// const dest = 'uploads/img';
+// const limits = { fileSize: 1000 * 1000 * 4 }; // limit to 4mb
+// const multerUploads = multer({ dest, limits, storage }).single('img');
+// module.exports = multerUploads;

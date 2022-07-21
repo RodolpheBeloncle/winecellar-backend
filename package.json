@@ -11,9 +11,11 @@
   "license": "ISC",
   "dependencies": {
     "argon2": "^0.28.5",
+    "cloudinary": "^1.30.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
+    "datauri": "^4.1.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "html-pdf": "^3.0.1",

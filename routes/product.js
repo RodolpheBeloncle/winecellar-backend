@@ -1,9 +1,29 @@
 const Product = require('../models/Product');
-const { verifyToken, verifyTokenAndAdmin } = require('./verifyToken');
+const { verifyTokenAndAdmin } = require('./verifyToken');
 const Joi = require('joi');
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/img' });
+const fs = require('fs');
+const { promisify } = require('util');
+const unlinkAsync = promisify(fs.unlink);
+const {
+  uploadToCloudinary,
+  removeFromCloudinary,
+} = require('../config/cloudinary');
+
 const ObjectID = require('mongoose').Types.ObjectId;
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, 'uploads/img');
+  },
+  filename(req, file, cb) {
+    cb(null, `${file.fieldname}-${Date.now()}`);
+  },
+});
+
+const dest = 'uploads/img';
+const limits = { fileSize: 1000 * 1000 * 4 }; // limit to 4mb
+const upload = multer({ dest, limits, storage }).single('img');
 
 const router = require('express').Router();
 
@@ -21,31 +41,33 @@ const inputValidator = Joi.object({
 
 //CREATE
 
-router.post(
-  '/',
-  verifyTokenAndAdmin,
-  upload.single('img'),
-  async (req, res) => {
-    const { value: newProduct, error } = inputValidator.validate(req.body);
+router.post('/', verifyTokenAndAdmin, upload, async (req, res) => {
+  const { value: newProduct, error } = inputValidator.validate(req.body);
+  console.log('MULTERUPLOADS :', req.file);
 
-    if (error) {
-      return res.status(400).json(error);
-    }
-
-    try {
-      const addProduct = new Product({
-        ...newProduct,
-        img: req.file.path,
-      });
-
-      const createdProduct = await addProduct.save();
-      return res.status(201).json({ message: createdProduct });
-    } catch (err) {
-      console.log(err);
-      return res.status(400).json(err);
-    }
+  if (error) {
+    return res.status(400).json(error);
   }
-);
+
+  try {
+    const data = await uploadToCloudinary(req.file.path, 'product-images');
+    const addProduct = new Product({
+      ...newProduct,
+      img: data.url,
+      publicId: data.public_id,
+    });
+
+    const createdProduct = await addProduct.save();
+    await unlinkAsync(req.file.path);
+    return res.status(201).json({
+      response: createdProduct,
+      message: 'product cretaed with sucess !',
+    });
+  } catch (err) {
+    console.log(err);
+    return res.status(400).json(err);
+  }
+});
 
 //UPDATE
 router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
@@ -114,6 +136,13 @@ router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
 //DELETE
 router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
+    // find product
+    const product = await Product.findOne({ _id: req.params.id });
+    // find it's public_id
+    const publicId = product.publicId;
+    // remove img from cloudinary
+    await removeFromCloudinary(publicId);
+
     await Product.findByIdAndDelete(req.params.id);
     res.status(200).json('Product has been deleted !');
   } catch (err) {
