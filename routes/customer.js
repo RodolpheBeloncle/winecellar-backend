@@ -21,10 +21,15 @@ const inputValidator = Joi.object({
 
 // create new customer
 router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
-  const { error } = inputValidator.validate(req.body);
+  const { value: updateCustomer, error } = inputValidator.validate(req.body);
+  const CustomerId = req.params.id;
+
+  if (!ObjectID.isValid(ProductId)) {
+    res.status(400).json('ID unknown : ' + CustomerId);
+  }
 
   if (error) {
-    return res.status(400).json(error);
+    res.status(400).json(error);
   }
 
   try {
@@ -39,7 +44,7 @@ router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
       });
     }
     const createCustomer = new Customer({
-      ...req.body,
+      ...updateCustomer,
       img: data.url,
       publicId: data.public_id,
     });
@@ -55,40 +60,58 @@ router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
   }
 });
 
-// update CustomerProfil
+// update Customer
 router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
   const CustomerId = req.params.id;
   if (!ObjectID.isValid(CustomerId)) {
-    res.status(400).send('ID unknown : ' + CustomerId);
+    res.status(400).json('ID unknown : ' + CustomerId);
   }
 
   try {
-    // find customer
-    const customer = await Customer.findOne({ _id: CustomerId });
-    // find it's public_id
-    const publicId = customer.publicId;
-    // remove img from cloudinary
-    await removeFromCloudinary(publicId);
+    if (req.file !== undefined) {
+      try {
+        // find customer
+        const customer = await Customer.findOne({ _id: CustomerId });
+        // find it's public_id
+        const publicId = customer.publicId;
+        // remove img from cloudinary
+        await removeFromCloudinary(publicId);
 
-    // upload image from cloudinary
-    const data = await uploadToCloudinary(req.file.path, 'customer-images');
-    const updatedCustomer = await Customer.findOneAndUpdate(
-      { _id: CustomerId },
-      {
-        img: data.url,
-        publicId: data.public_id,
-        customerName,
-        email,
-        phone,
-        adress,
-        country,
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
-    const { img, customerName, email, phone, adress, country } =
-      updatedCustomer;
-    await unlinkAsync(req.file.path);
-    res.status(200).json({ img, customerName, email, phone, adress, country });
+        // upload image from cloudinary
+        const data = await uploadToCloudinary(req.file.path, 'customer-images');
+        await Customer.findOneAndUpdate(
+          { _id: CustomerId },
+          {
+            $set: { img: data.url, publicId: data.public_id },
+          },
+          { new: true, upsert: true }
+        );
+        await unlinkAsync(req.file.path);
+      } catch (e) {
+        console.log('something went wrong');
+      }
+    }
+
+    const entries = Object.keys(req.body);
+    const updates = {};
+
+    for (let i = 0; i < entries.length; i++) {
+      if (Object.values(req.body)[i] !== '') {
+        updates[entries[i]] = Object.values(req.body)[i];
+      }
+    }
+
+    try {
+      const updatedCustomer = await Customer.findOneAndUpdate(
+        { _id: CustomerId },
+        { $set: updates },
+        { upsert: true, new: true }
+      );
+
+      res.status(200).json({ response: { ...updatedCustomer } });
+    } catch {
+      console.log('something went wrong with the update');
+    }
   } catch (error) {
     console.log(error);
     res.status(400).json({ message: `something went wrong!: ${error}` });

@@ -24,9 +24,10 @@ const inputValidator = Joi.object({
   content: Joi.string().allow(null, ''),
 });
 
+
 //CREATE
 
-router.post('/', verifyTokenAndAdmin, upload, async (req, res) => {
+router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
   const { value: newProduct, error } = inputValidator.validate(req.body);
   console.log('MULTERUPLOADS :', req.file);
 
@@ -54,28 +55,65 @@ router.post('/', verifyTokenAndAdmin, upload, async (req, res) => {
   }
 });
 
-//UPDATE
-router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
+
+// update Product
+router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
+  const { value: updateProduct, error } = inputValidator.validate(req.body);
+  const ProductId = req.params.id;
+  if (!ObjectID.isValid(ProductId)) {
+    res.status(400).json(error, 'ID unknown : ' + ProductId);
+  }
+
   try {
-    // find product
-    const product = await Product.findOne({ _id: req.params.id });
-    // find it's public_id
-    const publicId = product.publicId;
-    // remove img from cloudinary
-    await removeFromCloudinary(publicId);
-    // upload image from cloudinary
-    const data = await uploadToCloudinary(req.file.path, 'product-images');
-    const updatedProduct = await Product.findByIdAndUpdate(
-      { _id: req.params.id },
-      { ...req.body, img: data.url, publicId: data.public_id },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
-    await unlinkAsync(req.file.path);
-    res.status(200).json(updatedProduct);
-  } catch (err) {
-    res.status(500).json(err);
+    if (req.file !== undefined) {
+      try {
+        // find product
+        const product = await Product.findOne({ _id: ProductId });
+        // find it's public_id
+        const publicId = product.publicId;
+        // remove img from cloudinary
+        await removeFromCloudinary(publicId);
+        // upload image from cloudinary
+        const data = await uploadToCloudinary(req.file.path, 'product-images');
+        await Product.findByIdAndUpdate(
+          { _id: ProductId },
+          {
+            $set: { img: data.url, publicId: data.public_id },
+          },
+          { new: true, upsert: true }
+        );
+        await unlinkAsync(req.file.path);
+      } catch (e) {
+        console.log('something went wrong');
+      }
+    }
+
+    const entries = Object.keys(req.body);
+    const updates = {};
+
+    for (let i = 0; i < entries.length; i++) {
+      if (Object.values(req.body)[i] !== '') {
+        updates[entries[i]] = Object.values(req.body)[i];
+      }
+    }
+
+    try {
+      const updatedProduct = await Product.findOneAndUpdate(
+        { _id: ProductId },
+        { $set: updates },
+        { upsert: true, new: true }
+      );
+
+      res.status(200).json({ response: { ...updatedProduct } });
+    } catch {
+      console.log('something went wrong with the update');
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: `something went wrong!: ${error}` });
   }
 });
+
 
 // update multiple product quantity
 router.post('/many', verifyTokenAndAdmin, async (req, res) => {
