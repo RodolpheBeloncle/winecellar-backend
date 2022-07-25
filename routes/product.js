@@ -24,7 +24,6 @@ const inputValidator = Joi.object({
   content: Joi.string().allow(null, ''),
 });
 
-
 //CREATE
 
 router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
@@ -55,10 +54,8 @@ router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
   }
 });
 
-
 // update Product
 router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
-  const { value: updateProduct, error } = inputValidator.validate(req.body);
   const ProductId = req.params.id;
   if (!ObjectID.isValid(ProductId)) {
     res.status(400).json(error, 'ID unknown : ' + ProductId);
@@ -113,7 +110,6 @@ router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
     res.status(400).json({ message: `something went wrong!: ${error}` });
   }
 });
-
 
 // update multiple product quantity
 router.post('/many', verifyTokenAndAdmin, async (req, res) => {

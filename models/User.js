@@ -34,6 +34,7 @@ const UserSchema = new mongoose.Schema(
     },
     img: { type: String, default: '' },
     publicId: { type: String, default: '' },
+    isDarkMode: { type: Boolean, default: false}
   },
   {
     timestamps: true,

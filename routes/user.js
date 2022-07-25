@@ -43,7 +43,6 @@ router.post(
     if (!ObjectID.isValid(userId)) {
       res.status(400).json('ID unknown : ' + userId);
     }
-  
 
     try {
       console.log('QUERY UPDATEPROFIL', req.body, req.file);
@@ -68,15 +67,38 @@ router.post(
   }
 );
 
-//DELETE
-router.delete('/:id', async (req, res) => {
+// update userProfil
+router.post('/switchDarkMode/:id', verifyTokenAndAdmin, async (req, res) => {
+  const userId = req.params.id;
+  if (!ObjectID.isValid(userId)) {
+    res.status(400).json('ID unknown : ' + userId);
+  }
+
   try {
-    await User.findByIdAndDelete(req.params.id);
-    res.status(200).json('User has been deleted...');
-  } catch (err) {
-    res.status(500).json(err);
+    const updatedDarkMode = await User.findOneAndUpdate(
+      { _id: userId },
+      {
+        isDarkMode: req.body.darkMode,
+      },
+      { new: true, upsert: true, setDefaultsOnInsert: true }
+    );
+
+    res.status(200).json({darkMode : updatedDarkMode.isDarkMode});
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ message: `something went wrong!: ${error}` });
   }
 });
+
+//DELETE
+// router.delete('/:id', async (req, res) => {
+//   try {
+//     await User.findByIdAndDelete(req.params.id);
+//     res.status(200).json('User has been deleted...');
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
 
 //GET USER
 router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
@@ -104,29 +126,29 @@ router.get('/', verifyTokenAndAdmin, async (req, res) => {
 
 //GET USER STATS
 
-router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
-  const date = new Date();
-  const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
+// router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
+//   const date = new Date();
+//   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
 
-  try {
-    const data = await User.aggregate([
-      { $match: { createdAt: { $gte: lastYear } } },
-      {
-        $project: {
-          month: { $month: '$createdAt' },
-        },
-      },
-      {
-        $group: {
-          _id: '$month',
-          total: { $sum: 1 },
-        },
-      },
-    ]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+//   try {
+//     const data = await User.aggregate([
+//       { $match: { createdAt: { $gte: lastYear } } },
+//       {
+//         $project: {
+//           month: { $month: '$createdAt' },
+//         },
+//       },
+//       {
+//         $group: {
+//           _id: '$month',
+//           total: { $sum: 1 },
+//         },
+//       },
+//     ]);
+//     res.status(200).json(data);
+//   } catch (err) {
+//     res.status(500).json(err);
+//   }
+// });
 
 module.exports = router;

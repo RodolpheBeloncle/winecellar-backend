@@ -16,6 +16,23 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
+// GET orders from userID
+router.get('/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const orders = await Order.aggregate([
+      {
+        $match: { userId: userId },
+      },
+    ]);
+
+    res.status(200).json(orders);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 //UPDATE
 router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
   try {
@@ -76,11 +93,27 @@ router.get('/find/:userId', verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
-// GET ALL
-router.get('/', verifyTokenAndAdmin, async (req, res) => {
+router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
+  const date = new Date();
+  const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
+
   try {
-    const orders = await Order.find();
-    res.status(200).json(orders);
+    const data = await Order.aggregate([
+      { $match: { createdAt: { $gte: lastYear } } },
+      {
+        $project: {
+          month: { $month: '$createdAt' },
+        },
+      },
+      {
+        $group: {
+          _id: '$month',
+          Total: { $sum: 1 },
+        },
+      },
+    ]);
+
+    res.status(200).json(data);
   } catch (err) {
     res.status(500).json(err);
   }

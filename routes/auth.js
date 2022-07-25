@@ -5,30 +5,30 @@ const jwt = require('jsonwebtoken');
 // const {body, checkSchema, validationResult} = require('express-validator');
 const argon2 = require('argon2');
 
-router.post('/register', async (req, res) => {
-  const { email } = req.body;
+// router.post('/register', async (req, res) => {
+//   const { email } = req.body;
 
-  try {
-    const userExist = await User.findOne({ email: email });
+//   try {
+//     const userExist = await User.findOne({ email: email });
 
-    if (userExist) {
-      res.status(403).json({
-        message: 'user already exist',
-      });
-    }
-    const newUser = new User({
-      ...req.body,
-      password: await argon2.hash(req.body.password),
-    });
+//     if (userExist) {
+//       res.status(403).json({
+//         message: 'user already exist',
+//       });
+//     }
+//     const newUser = new User({
+//       ...req.body,
+//       password: await argon2.hash(req.body.password),
+//     });
 
-    await newUser.save();
-    res.status(201).json({
-      message: "'Successfully registered 😏 🍀'",
-    });
-  } catch (err) {
-    res.status(500).json({ message: err });
-  }
-});
+//     await newUser.save();
+//     res.status(201).json({
+//       message: "'Successfully registered 😏 🍀'",
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err });
+//   }
+// });
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '3d' }
     );
 
-    const { username, img, isAdmin } = user;
+    const { username, img, isAdmin, isDarkMode } = user;
 
     res.status(200).cookie('token', accessToken).json({
       currentUser: true,
@@ -67,6 +67,7 @@ router.post('/login', async (req, res) => {
       img: img,
       isAdmin: isAdmin,
       publicId: user._id,
+      isDarkMode: isDarkMode,
     });
   } catch (err) {
     res.status(401).json({ message: err });
