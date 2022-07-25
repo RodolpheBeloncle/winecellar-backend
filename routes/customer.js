@@ -21,30 +21,18 @@ const inputValidator = Joi.object({
 
 // create new customer
 router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
-  const { value: updateCustomer, error } = inputValidator.validate(req.body);
-  const CustomerId = req.params.id;
-
-  if (!ObjectID.isValid(ProductId)) {
-    res.status(400).json('ID unknown : ' + CustomerId);
-  }
+  const { value: newCustomer, error } = inputValidator.validate(req.body);
+  console.log('MULTERUPLOADS :', req.file);
 
   if (error) {
-    res.status(400).json(error);
+    return res.status(400).json(error);
   }
 
   try {
     const data = await uploadToCloudinary(req.file.path, 'customer-images');
-    const customerExist = await Customer.findOne({
-      email: req.body.email,
-    });
-
-    if (customerExist) {
-      res.status(403).json({
-        message: 'user already exist',
-      });
-    }
+ 
     const createCustomer = new Customer({
-      ...updateCustomer,
+      ...newCustomer,
       img: data.url,
       publicId: data.public_id,
     });

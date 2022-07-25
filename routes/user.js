@@ -67,7 +67,7 @@ router.post(
   }
 );
 
-// update userProfil
+// update updateDarkMode
 router.post('/switchDarkMode/:id', verifyTokenAndAdmin, async (req, res) => {
   const userId = req.params.id;
   if (!ObjectID.isValid(userId)) {
@@ -83,7 +83,7 @@ router.post('/switchDarkMode/:id', verifyTokenAndAdmin, async (req, res) => {
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
-    res.status(200).json({darkMode : updatedDarkMode.isDarkMode});
+    res.status(200).json({ darkMode: updatedDarkMode.isDarkMode });
   } catch (error) {
     console.log(error);
     res.status(400).json({ message: `something went wrong!: ${error}` });
