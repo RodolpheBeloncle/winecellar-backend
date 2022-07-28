@@ -45,7 +45,6 @@ router.post(
     }
 
     try {
-      console.log('QUERY UPDATEPROFIL', req.body, req.file);
       // upload image from cloudinary
       const data = await uploadToCloudinary(req.file.path, 'profil-images');
       const updatedProfil = await User.findOneAndUpdate(
