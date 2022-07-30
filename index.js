@@ -33,7 +33,7 @@ mongoose
     });
   
   const corsOptions = {
-  origin: process.env.CLIENT_URL,
+  origin: true,
   credentials: true,
 };
 app.use(cors(corsOptions));
