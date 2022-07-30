@@ -11,7 +11,7 @@ const productRoute = require('./routes/product');
 const customerRoute = require('./routes/customer');
 const orderRoute = require('./routes/order');
 const pdf = require('html-pdf');
-const cors = require('core');
+const cors = require('cors');
 
 const pdfTemplate = require('./document');
 
