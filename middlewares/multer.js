@@ -1,5 +1,4 @@
 const multer = require('multer');
-const fs = require('fs');
 
 // multer config
 const storage = multer.diskStorage({

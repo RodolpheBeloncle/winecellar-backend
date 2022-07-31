@@ -37,7 +37,7 @@ const router = require('express').Router();
 router.post(
   '/updateProfil/:id',
   verifyToken,
-  upload,
+  upload,function(req, res, next){
   async (req, res) => {
     const userId = req.params.id;
     if (!ObjectID.isValid(userId)) {
@@ -57,13 +57,13 @@ router.post(
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
       const { img, username } = updatedProfil;
-      // await unlinkAsync(req.file.path);
+      await unlinkAsync(req.file.path);
       res.status(200).json({ img, username });
     } catch (error) {
       console.log(error);
       res.status(400).json({ message: `something went wrong!: ${error}` });
     }
-  }
+  }}
 );
 
 // update updateDarkMode
