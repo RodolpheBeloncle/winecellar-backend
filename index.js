@@ -24,12 +24,13 @@ mongoose
     console.log(err);
   });
 
+
+app.use(cookieParser());
 app.use(
   cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
 app.use('/uploads', express.static('uploads'));
 // serving static files
 app.use(express.static(path.join(__dirname, 'public')));
