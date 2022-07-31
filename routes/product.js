@@ -161,6 +161,15 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 //DELETE
 router.delete('/:id', verifyToken, async (req, res) => {
+
+  const { isAdmin } = req.user;
+
+    if (!isAdmin) {
+        return res.sendStatus(403);
+    }
+
+
+
   try {
     // find product
     const product = await Product.findOne({ _id: req.params.id });

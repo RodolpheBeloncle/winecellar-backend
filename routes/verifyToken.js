@@ -8,8 +8,10 @@ const verifyToken = async (req, res, next) => {
       if (err) {
         return res.sendStatus(403);
       }
-
-      req.user = user;
+      res.cookie('token', user, {
+        expires  : new Date(Date.now() + 9999999),
+        httpOnly : false
+      });
       next();
     });
   } else {
