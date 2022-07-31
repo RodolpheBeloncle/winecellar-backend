@@ -1,16 +1,34 @@
 const multer = require('multer');
+const fs = require('fs');
 
 // multer config
 const storage = multer.diskStorage({
   destination(req, file, cb) {
-    cb(null, 'uploads/img');
+    let path = `uploads/img`;
+    fs.mkdirsSync(path);
+    cb(null, __dirname + path);
   },
   filename(req, file, cb) {
-    cb(null, `${file.fieldname}-${Date.now()}`);
+    cb(null, Date.now() + file.originalname.replace(/\s+/g, '-'));
   },
 });
 
+const fileFilter = (req, file, cb) => {
+  // reject a file
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 const dest = 'uploads/img';
-const limits = { fileSize: 1000 * 1000 * 4 }; // limit to 4mb
-const upload = multer({ dest, limits, storage }).single('img');
-module.exports = upload ;
+const upload = multer({
+  limits: {
+    fileSize: 1024 * 1024 * 5,
+  },
+  fileFilter: fileFilter,
+  dest,
+  storage,
+}).single('img');
+module.exports = upload;
