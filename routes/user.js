@@ -37,7 +37,7 @@ const router = require('express').Router();
 router.post(
   '/updateProfil/:id',
   verifyToken,
-  upload
+  upload,
   async (req, res) => {
     const userId = req.params.id;
     if (!ObjectID.isValid(userId)) {
