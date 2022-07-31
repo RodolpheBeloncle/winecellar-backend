@@ -1,16 +1,17 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
-  const authToken = req.cookies.token;
-  if (!authToken) {
-    return res.status(401).json('you are not authenticated');
+  const cookies = ctx.request.header.cookie || false;
+  if (cookies) {
+    let token = cookies
+      .split(';')
+      .find((c) => c.trim().startsWith('token='))
+      .split('=')[1];
+    if (token) {
+      ctx.request.header.authorization = `Bearer ${token}`;
+    }
   }
-
-  jwt.verify(authToken, process.env.TOKEN_SECRET, (err, user) => {
-    if (err) res.status(403).json('token is not valid');
-    req.user = user;
-    next();
-  });
+  next();
 };
 
 module.exports = {
