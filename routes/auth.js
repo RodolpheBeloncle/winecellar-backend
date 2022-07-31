@@ -5,30 +5,30 @@ const jwt = require('jsonwebtoken');
 // const {body, checkSchema, validationResult} = require('express-validator');
 const argon2 = require('argon2');
 
-// router.post('/register', async (req, res) => {
-//   const { email } = req.body;
+router.post('/register', async (req, res) => {
+  const { email } = req.body;
 
-//   try {
-//     const userExist = await User.findOne({ email: email });
+  try {
+    const userExist = await User.findOne({ email: email });
 
-//     if (userExist) {
-//       res.status(403).json({
-//         message: 'user already exist',
-//       });
-//     }
-//     const newUser = new User({
-//       ...req.body,
-//       password: await argon2.hash(req.body.password),
-//     });
+    if (userExist) {
+      res.status(403).json({
+        message: 'user already exist',
+      });
+    }
+    const newUser = new User({
+      ...req.body,
+      password: await argon2.hash(req.body.password),
+    });
 
-//     await newUser.save();
-//     res.status(201).json({
-//       message: "'Successfully registered 😏 🍀'",
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: err });
-//   }
-// });
+    await newUser.save();
+    res.status(201).json({
+      message: "'Successfully registered 😏 🍀'",
+    });
+  } catch (err) {
+    res.status(500).json({ message: err });
+  }
+});
 
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;

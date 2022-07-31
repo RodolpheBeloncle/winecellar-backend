@@ -24,7 +24,9 @@ mongoose
     console.log(err);
   });
 
-app.use(cors({ credentials: true , origin: 'https://winecellar.rodolphebeloncle.com',}));
+app.use(
+  cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
