@@ -1,11 +1,11 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = async (req, res, next) => {
-  const authHeader = req.headers.cookie;
+  const authHeader = req.cokkies.token;
 
   if (authHeader) {
     jwt.verify(authHeader, process.env.TOKEN_SECRET, (err, user) => {
-      if (err) {
+      if (!user) {
         return res.sendStatus(403);
       }
       next();

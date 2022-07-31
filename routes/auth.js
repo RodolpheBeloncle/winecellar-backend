@@ -62,9 +62,9 @@ router.post('/login', async (req, res) => {
     const { username, img, isAdmin, isDarkMode } = user;
     res.cookie('token', accessToken, {
       expires  : new Date(Date.now() + 9999999),
-      httpOnly : false
+      httpOnly : true
     });
-    
+
     res.status(200).json({
       currentUser: true,
       userId: user._id,
