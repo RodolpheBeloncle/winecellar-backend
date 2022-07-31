@@ -8,11 +8,9 @@ const verifyToken = async (req, res, next) => {
       if (!user) {
         return res.sendStatus(403);
       }
-      console.log("token cookies",user)
-      return next();
+      res.status(200).json({ message: `ok token${user}` });
+      next();
     });
-  } else {
-    res.sendStatus(401);
   }
 };
 
