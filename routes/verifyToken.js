@@ -1,16 +1,19 @@
 const jwt = require('jsonwebtoken');
 
 const verifyToken = async (req, res, next) => {
-  try {
-    jwt.verify(authToken, process.env.TOKEN_SECRET, (err, user) => {
+  const authHeader = req.headers.cookie;
+
+  if (authHeader) {
+    jwt.verify(authHeader, process.env.TOKEN_SECRET, (err, user) => {
       if (err) {
-        return res.status(401).json({ message: 'You are not authenticated!' });
+        return res.sendStatus(403);
       }
-      res.status(200).cookie('token', user)
+
+      req.user = user;
       next();
     });
-  } catch (error) {
-    return res.status(401).json({ message: error });
+  } else {
+    res.sendStatus(401);
   }
 };
 
