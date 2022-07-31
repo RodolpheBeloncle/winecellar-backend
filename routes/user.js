@@ -57,7 +57,7 @@ router.post(
         { new: true, upsert: true, setDefaultsOnInsert: true }
       );
       const { img, username } = updatedProfil;
-      await unlinkAsync(req.file.path);
+      // await unlinkAsync(req.file.path);
       res.status(200).json({ img, username });
     } catch (error) {
       console.log(error);
