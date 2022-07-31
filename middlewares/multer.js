@@ -3,12 +3,10 @@ const fs = require('fs');
 
 // multer config
 const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    let path = `uploads/img`;
-    fs.mkdirsSync(path);
-    cb(null, __dirname + path);
+  destination: function (req, file, cb) {
+    cb(null, process.cwd() + 'uploads/img');
   },
-  filename(req, file, cb) {
+  filename: function (req, file, cb) {
     cb(null, Date.now() + file.originalname.replace(/\s+/g, '-'));
   },
 });
@@ -22,13 +20,11 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const dest = 'uploads/img';
 const upload = multer({
   limits: {
     fileSize: 1024 * 1024 * 5,
   },
   fileFilter: fileFilter,
-  dest,
   storage,
 }).single('img');
 module.exports = upload;
