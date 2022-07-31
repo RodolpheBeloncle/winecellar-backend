@@ -37,7 +37,7 @@ const router = require('express').Router();
 router.post(
   '/updateProfil/:id',
   verifyToken,
-  upload,function(req, res, next){
+  upload
   async (req, res) => {
     const userId = req.params.id;
     if (!ObjectID.isValid(userId)) {
@@ -63,7 +63,7 @@ router.post(
       console.log(error);
       res.status(400).json({ message: `something went wrong!: ${error}` });
     }
-  }}
+  }
 );
 
 // update updateDarkMode
