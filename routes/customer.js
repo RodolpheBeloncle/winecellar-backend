@@ -1,6 +1,6 @@
 const Customer = require('../models/Customer');
 const Joi = require('joi');
-const { verifyTokenAndAdmin } = require('./verifyToken');
+const { verifyToken } = require('./verifyToken');
 const ObjectID = require('mongoose').Types.ObjectId;
 const upload = require('../middlewares/multer');
 const unlinkAsync = require('../utils/unlinkAsync');
@@ -20,7 +20,7 @@ const inputValidator = Joi.object({
 });
 
 // create new customer
-router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
+router.post('/new', verifyToken, upload, async (req, res) => {
   const { value: newCustomer, error } = inputValidator.validate(req.body);
   console.log('MULTERUPLOADS :', req.file);
 
@@ -49,7 +49,7 @@ router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
 });
 
 // update Customer
-router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
+router.post('/update/:id', verifyToken, upload, async (req, res) => {
   const CustomerId = req.params.id;
   if (!ObjectID.isValid(CustomerId)) {
     res.status(400).json('ID unknown : ' + CustomerId);
@@ -123,7 +123,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 //GET Customer
-router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
+router.get('/find/:id', async (req, res) => {
   try {
     const Customer = await Customer.findById(req.params.id);
     const { ...others } = Customer._doc;
@@ -134,7 +134,7 @@ router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET ALL Customer
-router.get('/', verifyTokenAndAdmin, async (req, res) => {
+router.get('/', async (req, res) => {
   const query = req.query.new;
   try {
     const Customers = query

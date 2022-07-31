@@ -1,5 +1,5 @@
 const Order = require('../models/Order');
-const { verifyToken, verifyTokenAndAdmin } = require('./verifyToken');
+const { verifyToken } = require('./verifyToken');
 
 const router = require('express').Router();
 
@@ -34,7 +34,7 @@ router.get('/:userId', async (req, res) => {
 });
 
 //UPDATE
-router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const updatedOrder = await Order.findByIdAndUpdate(
       req.params.id,
@@ -50,7 +50,7 @@ router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //DELETE
-router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
     res.status(200).json('Order has been deleted...');
@@ -60,7 +60,7 @@ router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET User Order performance and balance from last 6 months[_id] sales
-router.get('/find/:userId', verifyTokenAndAdmin, async (req, res) => {
+router.get('/find/:userId', async (req, res) => {
   const userId = req.params.userId;
   const date = new Date();
   const lastMonth = new Date(date.setMonth(date.getMonth() - 1));
@@ -93,7 +93,7 @@ router.get('/find/:userId', verifyTokenAndAdmin, async (req, res) => {
   }
 });
 
-router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
+router.get('/stats', async (req, res) => {
   const date = new Date();
   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
 
@@ -155,7 +155,7 @@ router.get('/income', async (req, res) => {
   }
 });
 
-router.get('/latest/:userId', verifyTokenAndAdmin, async (req, res) => {
+router.get('/latest/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {

@@ -1,5 +1,5 @@
 const User = require('../models/User');
-const { verifyTokenAndAdmin } = require('./verifyToken');
+const { verifyToken } = require('./verifyToken');
 const ObjectID = require('mongoose').Types.ObjectId;
 const upload = require('../middlewares/multer');
 const unlinkAsync = require('../utils/unlinkAsync');
@@ -36,7 +36,7 @@ const router = require('express').Router();
 // update userProfil
 router.post(
   '/updateProfil/:id',
-  verifyTokenAndAdmin,
+  verifyToken,
   upload,
   async (req, res) => {
     const userId = req.params.id;
@@ -67,7 +67,7 @@ router.post(
 );
 
 // update updateDarkMode
-router.post('/switchDarkMode/:id', verifyTokenAndAdmin, async (req, res) => {
+router.post('/switchDarkMode/:id', verifyToken, async (req, res) => {
   const userId = req.params.id;
   if (!ObjectID.isValid(userId)) {
     res.status(400).json('ID unknown : ' + userId);
@@ -100,7 +100,7 @@ router.post('/switchDarkMode/:id', verifyTokenAndAdmin, async (req, res) => {
 // });
 
 //GET USER
-router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
+router.get('/find/:id', async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     const { password, ...others } = user._doc;
@@ -111,7 +111,7 @@ router.get('/find/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //GET ALL USER
-router.get('/', verifyTokenAndAdmin, async (req, res) => {
+router.get('/', async (req, res) => {
   const query = req.query.new;
   try {
     const users = query
@@ -125,7 +125,7 @@ router.get('/', verifyTokenAndAdmin, async (req, res) => {
 
 //GET USER STATS
 
-// router.get('/stats', verifyTokenAndAdmin, async (req, res) => {
+// router.get('/stats', verifyToken, async (req, res) => {
 //   const date = new Date();
 //   const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
 

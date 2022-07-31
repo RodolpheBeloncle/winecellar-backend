@@ -1,5 +1,5 @@
 const Product = require('../models/Product');
-const { verifyTokenAndAdmin } = require('./verifyToken');
+const { verifyToken } = require('./verifyToken');
 const Joi = require('joi');
 const upload = require('../middlewares/multer');
 const unlinkAsync = require('../utils/unlinkAsync');
@@ -26,7 +26,7 @@ const inputValidator = Joi.object({
 
 //CREATE
 
-router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
+router.post('/new', verifyToken, upload, async (req, res) => {
   const { value: newProduct, error } = inputValidator.validate(req.body);
   console.log('MULTERUPLOADS :', req.file);
 
@@ -55,7 +55,7 @@ router.post('/new', verifyTokenAndAdmin, upload, async (req, res) => {
 });
 
 // update Product
-router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
+router.post('/update/:id', verifyToken, upload, async (req, res) => {
   const ProductId = req.params.id;
   if (!ObjectID.isValid(ProductId)) {
     res.status(400).json(error, 'ID unknown : ' + ProductId);
@@ -112,7 +112,7 @@ router.post('/update/:id', verifyTokenAndAdmin, upload, async (req, res) => {
 });
 
 // update multiple product quantity
-router.post('/many', verifyTokenAndAdmin, async (req, res) => {
+router.post('/many', verifyToken, async (req, res) => {
   const { updates } = req.body;
 
   try {
@@ -144,7 +144,7 @@ router.post('/many', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //UPDATE QUANTITY
-router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
+router.put('/:id', verifyToken, async (req, res) => {
   try {
     const updatedProduct = await Product.findByIdAndUpdate(
       req.params.id,
@@ -160,7 +160,7 @@ router.put('/:id', verifyTokenAndAdmin, async (req, res) => {
 });
 
 //DELETE
-router.delete('/:id', verifyTokenAndAdmin, async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     // find product
     const product = await Product.findOne({ _id: req.params.id });
