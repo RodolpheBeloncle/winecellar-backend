@@ -1,3 +1,5 @@
+const logo = require('../logo/residence-logo.png')
+
 module.exports = ({ name, receiptId, orderCart }) => {
   const today = new Date();
 
@@ -87,7 +89,7 @@ module.exports = ({ name, receiptId, orderCart }) => {
                    <td colspan="2">
                       <table>
                          <tr>
-                            <td class="title"><a href="https://www.residence-le-tonneau.fr/"><img  src="https://www.residence-le-tonneau.fr/wp-content/uploads/2018/07/logo-150x90.png"
+                            <td class="title"><a href="https://www.residence-le-tonneau.fr/"><img  src=${logo}
                                style="width:100%; max-width:156px;"></a></td>
                             <td>
                                Date: ${`${today.getDate()}/ ${
