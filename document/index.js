@@ -89,6 +89,8 @@ module.exports = ({ name, receiptId, orderCart }) => {
                          <td>
                          Résidence Le Tonneau ***
                          </td>
+                         </tr>
+                         <tr>
                             <td>
                                Date: ${`${today.getDate()}/ ${
                                  today.getMonth() + 1
