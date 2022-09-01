@@ -25,7 +25,7 @@ const CustomerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    img: { type: String, require: false },
+    img: { type: String, default: 'NC'},
     publicId: { type: String },
     userId: { type: String, required: true },
     country: {

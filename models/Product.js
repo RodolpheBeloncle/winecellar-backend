@@ -4,7 +4,7 @@ const ProductSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, trim: true },
     desc: { type: String, default: 'NC' },
-    img: { type: String, require: false },
+    img: { type: String, default: 'NC'},
     publicId: { type: String },
     userId: { type: String, required: true },
     vintage: { type: String, default: 'NC' },

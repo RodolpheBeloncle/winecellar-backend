@@ -51,27 +51,37 @@ const productPostSchema = Joi.object({
 
 //Create New Product
 router.post('/new/:userId', verifyToken, upload, async (req, res) => {
+  const { value: newProduct, error } = productPostSchema.validate(req.body);
+
+  if (error) {
+    res.status(400).json(error);
+  }
+
   try {
-    const { value: newProduct, error } = productPostSchema.validate(req.body);
+    if (req.files === undefined) {
+      new Product({
+        ...newProduct,
+        userId: req.params.userId,
+      }).save();
+      res.status(201).json({
+        response: addProduct,
+        message: 'product created with success !',
+      });
+    } else if (req.files) {
+      const data = await uploadToCloudinary(req.file.path, 'product-images');
+      new Product({
+        ...newProduct,
+        userId: req.params.userId,
+        img: data.url,
+        publicId: data.public_id,
+      }).save();
 
-    if (error) {
-      res.status(400).json(error);
+      await unlinkAsync(req.file.path);
+      res.status(201).json({
+        response: addProduct,
+        message: 'product created with success !',
+      });
     }
-
-    const data = await uploadToCloudinary(req.file.path, 'product-images');
-    const addProduct = new Product({
-      ...newProduct,
-      userId: req.params.userId,
-      img: data.url,
-      publicId: data.public_id,
-    }).save();
-
-    await unlinkAsync(req.file.path);
-
-    res.status(201).json({
-      response: addProduct,
-      message: 'product created with success !',
-    });
   } catch (err) {
     res.status(400).json(err);
   }
@@ -103,7 +113,6 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
           },
           { new: true, upsert: true }
         );
-       
       } catch (e) {
         console.log('something went wrong');
       }
@@ -130,11 +139,10 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
       console.log('something went wrong with the update');
     }
   } catch (error) {
-    console.log("test error",error);
+    console.log('test error', error);
     res.status(400).json({ message: `something went wrong!: ${error}` });
   }
 });
-
 
 // update multiple product quantity
 router.post('/many', verifyToken, async (req, res) => {
@@ -188,13 +196,19 @@ router.delete('/:id', verifyToken, async (req, res) => {
   try {
     // find product
     const product = await Product.findOne({ _id: req.params.id });
-    // find it's public_id
-    const publicId = product.publicId;
-    // remove img from cloudinary
-    await removeFromCloudinary(publicId);
 
-    await Product.findByIdAndDelete(req.params.id);
-    res.status(200).json('Product has been deleted !');
+    if (product.img === 'NC') {
+      await Product.findByIdAndDelete(req.params.id);
+      res.status(200).json('Product has been deleted !');
+    } else {
+      // find it's public_id
+      const publicId = product.publicId;
+      // remove img from cloudinary
+      await removeFromCloudinary(publicId);
+
+      await Product.findByIdAndDelete(req.params.id);
+      res.status(200).json('Product has been deleted !');
+    }
   } catch (err) {
     res.status(500).json(err);
   }

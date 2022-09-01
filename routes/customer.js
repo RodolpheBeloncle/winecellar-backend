@@ -22,88 +22,86 @@ const inputValidator = Joi.object({
 // create new customer
 router.post('/new/:userId', verifyToken, upload, async (req, res) => {
   const { value: newCustomer, error } = inputValidator.validate(req.body);
-  console.log('MULTERUPLOADS :', req.file);
 
   if (error) {
-    return res.status(400).json(error);
+    res.status(400).json(error);
   }
 
   try {
+    // Upload image to cloudinary
     const data = await uploadToCloudinary(req.file.path, 'customer-images');
- 
-    const createCustomer = new Customer({
+    await unlinkAsync(req.file.path);
+    // Create new Customer
+    let customer = new Customer({
       ...newCustomer,
       userId: req.params.userId,
       img: data.url,
       publicId: data.public_id,
     });
+    await customer.save();
 
-    await createCustomer.save();
-    await unlinkAsync(req.file.path);
     res.status(201).json({
       message: "' Customer Successfully registered 😏 🍀'",
     });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: err });
   }
 });
 
 // update Customer
-router.post('/update/:id', verifyToken, upload, async (req, res) => {
-  const CustomerId = req.params.id;
-  if (!ObjectID.isValid(CustomerId)) {
-    res.status(400).json('ID unknown : ' + CustomerId);
-  }
-
+router.put('/update/:id', verifyToken, upload, async (req, res) => {
   try {
-    if (req.file !== undefined) {
-      try {
-        // find customer
-        const customer = await Customer.findOne({ _id: CustomerId });
-        // find it's public_id
-        const publicId = customer.publicId;
-        // remove img from cloudinary
-        await removeFromCloudinary(publicId);
+    let customer = await Customer.findById(req.params.id);
+    // delete image from cloudinary
 
-        // upload image from cloudinary
-        const data = await uploadToCloudinary(req.file.path, 'customer-images');
-        await Customer.findOneAndUpdate(
-          { _id: CustomerId },
-          {
-            $set: { img: data.url, publicId: data.public_id },
-          },
-          { new: true, upsert: true }
-        );
-        await unlinkAsync(req.file.path);
-      } catch (e) {
-        console.log('something went wrong');
-      }
-    }
+    await removeFromCloudinary(customer.publicId);
 
-    const entries = Object.keys(req.body);
-    const updates = {};
+    // upload image from cloudinary
+    const result = await uploadToCloudinary(req.file.path, 'customer-images');
+    console.log(result)
 
-    for (let i = 0; i < entries.length; i++) {
-      if (Object.values(req.body)[i] !== '') {
-        updates[entries[i]] = Object.values(req.body)[i];
-      }
-    }
+    const data = {
+      customerName: req.body.customerName || customer.name,
+      email: req.body.email || customer.email,
+      phone: req.body.phone || customer.phone,
+      adress: req.body.address || customer.address,
+      img: result.url ? result.url : customer.img,
+      publicId: result.public_id ? result.public_id : customer.publicId,
+      country: req.body.country || customer.country,
+    };
 
-    try {
-      const updatedCustomer = await Customer.findOneAndUpdate(
-        { _id: CustomerId },
-        { $set: updates },
-        { upsert: true, new: true }
-      );
+    user = await Customer.findByIdAndUpdate(req.params.id, data, {
+      new: true,
+    });
+    res.status(200).json({ message: 'succesfully updated' });
 
-      res.status(200).json({ response: { ...updatedCustomer } });
-    } catch {
-      console.log('something went wrong with the update');
-    }
+    //     await Customer.findOneAndUpdate(
+    //       { _id: CustomerId },
+    //       {
+    //         $set: { img: data.url, publicId: data.public_id },
+    //       },
+    //       { new: true, upsert: true }
+    //     );
+    //     await unlinkAsync(req.file.path);
+    //   } catch (e) {
+    //     console.log('something went wrong');
+    //   }
+    // }
+
+    // try {
+    //   const updatedCustomer = await Customer.findOneAndUpdate(
+    //     { _id: CustomerId },
+    //     { $set: updates },
+    //     { upsert: true, new: true }
+    //   );
+
+    //   res.status(200).json({ response: { ...updatedCustomer } });
+    // } catch {
+    //   console.log('something went wrong with the update');
+    // }
   } catch (error) {
     console.log(error);
-    res.status(400).json({ message: `something went wrong!: ${error}` });
+    res.status(400).json({ message: error });
   }
 });
 
@@ -111,13 +109,16 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     // find customer
-    const customer = await Customer.findOne({ _id: req.params.id });
-    // find it's public_id
-    const publicId = customer.publicId;
-    // remove img from cloudinary
-    await removeFromCloudinary(publicId);
-    await Customer.findByIdAndDelete(req.params.id);
-    res.status(200).json('Customer has been deleted...');
+    const customer = await Customer.findById(req.params.id);
+    if (customer.img === 'NC' || !customer.publicId) {
+      await Customer.findByIdAndDelete(req.params.id);
+      res.status(200).json('Customer has been deleted...');
+    } else {
+      // remove img from cloudinary
+      await removeFromCloudinary(customer.publicId);
+      await customer.remove();
+      res.status(200).json('Customer has been deleted...');
+    }
   } catch (err) {
     res.status(500).json(err);
   }
@@ -140,7 +141,7 @@ router.get('/:userId', async (req, res) => {
   try {
     const getCustomersList = await Customer.aggregate([
       {
-        $match: { userId: userId  },
+        $match: { userId: userId },
       },
     ]);
     res.status(200).json(getCustomersList);
