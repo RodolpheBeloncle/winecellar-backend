@@ -24,11 +24,27 @@ mongoose
     console.log(err);
   });
 
-
 app.use(cookieParser());
-app.use(
-  cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
-);
+// app.use(
+//   cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
+// );
+
+var whitelist = [
+  'https://winecellar.rodolphebeloncle.com',
+  'http://localhost:3000',
+];
+var corsOptions = {
+  credentials: true,
+  origin: function (origin, callback) {
+    if (whitelist.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
+app.use(cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static('uploads'));

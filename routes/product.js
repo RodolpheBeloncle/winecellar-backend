@@ -12,8 +12,33 @@ const ObjectID = require('mongoose').Types.ObjectId;
 
 const router = require('express').Router();
 
-const inputValidator = Joi.object({
-  title: Joi.string().allow(null, ''),
+//GET ALL PRODUCTS
+router.get('/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const getProductsList = await Product.aggregate([
+      {
+        $match: { userId: userId },
+      },
+    ]);
+    res.status(200).json(getProductsList);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//GET PRODUCT
+router.get('/find/:id', async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    res.status(200).json(product);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+const productPostSchema = Joi.object({
+  title: Joi.string().allow(null, '').required(),
   desc: Joi.string().allow(null, ''),
   vintage: Joi.string().allow(null, ''),
   size: Joi.string().allow(null, ''),
@@ -24,33 +49,31 @@ const inputValidator = Joi.object({
   content: Joi.string().allow(null, ''),
 });
 
-//CREATE
-
-router.post('/new', verifyToken, upload, async (req, res) => {
-  const { value: newProduct, error } = inputValidator.validate(req.body);
-  console.log('MULTERUPLOADS :', req.file);
-
-  if (error) {
-    return res.status(400).json(error);
-  }
-
+//Create New Product
+router.post('/new/:userId', verifyToken, upload, async (req, res) => {
   try {
+    const { value: newProduct, error } = productPostSchema.validate(req.body);
+
+    if (error) {
+      res.status(400).json(error);
+    }
+
     const data = await uploadToCloudinary(req.file.path, 'product-images');
     const addProduct = new Product({
       ...newProduct,
+      userId: req.params.userId,
       img: data.url,
       publicId: data.public_id,
-    });
+    }).save();
 
-    const createdProduct = await addProduct.save();
     await unlinkAsync(req.file.path);
-    return res.status(201).json({
-      response: createdProduct,
-      message: 'product cretaed with sucess !',
+
+    res.status(201).json({
+      response: addProduct,
+      message: 'product created with success !',
     });
   } catch (err) {
-    console.log(err);
-    return res.status(400).json(err);
+    res.status(400).json(err);
   }
 });
 
@@ -58,7 +81,7 @@ router.post('/new', verifyToken, upload, async (req, res) => {
 router.post('/update/:id', verifyToken, upload, async (req, res) => {
   const ProductId = req.params.id;
   if (!ObjectID.isValid(ProductId)) {
-    res.status(400).json(error, 'ID unknown : ' + ProductId);
+    res.status(400).json(`ID: ${ProductId} unknown : `);
   }
 
   try {
@@ -72,6 +95,7 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
         await removeFromCloudinary(publicId);
         // upload image from cloudinary
         const data = await uploadToCloudinary(req.file.path, 'product-images');
+        await unlinkAsync(req.file.path);
         await Product.findByIdAndUpdate(
           { _id: ProductId },
           {
@@ -79,7 +103,7 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
           },
           { new: true, upsert: true }
         );
-        await unlinkAsync(req.file.path);
+       
       } catch (e) {
         console.log('something went wrong');
       }
@@ -106,10 +130,11 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
       console.log('something went wrong with the update');
     }
   } catch (error) {
-    console.log(error);
+    console.log("test error",error);
     res.status(400).json({ message: `something went wrong!: ${error}` });
   }
 });
+
 
 // update multiple product quantity
 router.post('/many', verifyToken, async (req, res) => {
@@ -158,10 +183,8 @@ router.put('/:id', verifyToken, async (req, res) => {
     res.status(500).json(err);
   }
 });
-
 //DELETE
 router.delete('/:id', verifyToken, async (req, res) => {
-
   try {
     // find product
     const product = await Product.findOne({ _id: req.params.id });
@@ -172,41 +195,6 @@ router.delete('/:id', verifyToken, async (req, res) => {
 
     await Product.findByIdAndDelete(req.params.id);
     res.status(200).json('Product has been deleted !');
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-//GET PRODUCT
-router.get('/find/:id', async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id);
-    res.status(200).json(product);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-//GET ALL PRODUCTS
-router.get('/', async (req, res) => {
-  const qNew = req.query.new;
-  const qCategory = req.query.category;
-  try {
-    let products;
-
-    if (qNew) {
-      products = await Product.find().sort({ createdAt: -1 }).limit(1);
-    } else if (qCategory) {
-      products = await Product.find({
-        categories: {
-          $in: [qCategory],
-        },
-      });
-    } else {
-      products = await Product.find();
-    }
-
-    res.status(200).json(products);
   } catch (err) {
     res.status(500).json(err);
   }

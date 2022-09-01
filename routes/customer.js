@@ -20,7 +20,7 @@ const inputValidator = Joi.object({
 });
 
 // create new customer
-router.post('/new', verifyToken, upload, async (req, res) => {
+router.post('/new/:userId', verifyToken, upload, async (req, res) => {
   const { value: newCustomer, error } = inputValidator.validate(req.body);
   console.log('MULTERUPLOADS :', req.file);
 
@@ -33,6 +33,7 @@ router.post('/new', verifyToken, upload, async (req, res) => {
  
     const createCustomer = new Customer({
       ...newCustomer,
+      userId: req.params.userId,
       img: data.url,
       publicId: data.public_id,
     });
@@ -134,13 +135,15 @@ router.get('/find/:id', async (req, res) => {
 });
 
 //GET ALL Customer
-router.get('/', async (req, res) => {
-  const query = req.query.new;
+router.get('/:userId', async (req, res) => {
+  const userId = req.params.userId;
   try {
-    const Customers = query
-      ? await Customer.find().sort({ _id: -1 }).limit(5)
-      : await Customer.find();
-    res.status(200).json(Customers);
+    const getCustomersList = await Customer.aggregate([
+      {
+        $match: { userId: userId  },
+      },
+    ]);
+    res.status(200).json(getCustomersList);
   } catch (err) {
     res.status(500).json(err);
   }

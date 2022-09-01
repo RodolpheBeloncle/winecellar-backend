@@ -6,6 +6,7 @@ const ProductSchema = new mongoose.Schema(
     desc: { type: String, default: 'NC' },
     img: { type: String, require: false },
     publicId: { type: String },
+    userId: { type: String, required: true },
     vintage: { type: String, default: 'NC' },
     country: { type: String, default: 'NC' },
     size: { type: String, default: 'NC' },
