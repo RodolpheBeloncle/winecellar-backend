@@ -25,14 +25,14 @@ mongoose
   });
 
 app.use(cookieParser());
-// app.use(
-//   cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
-// );
+app.use(
+  cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
+);
 
-let whitelist = [
-  'https://winecellar.rodolphebeloncle.com',
-  'http://localhost:3000',
-];
+// let whitelist = [
+//   'https://winecellar.rodolphebeloncle.com',
+//   'http://localhost:3000',
+// ];
 let corsOptions = {
   credentials: true,
   origin: function (origin, callback) {
