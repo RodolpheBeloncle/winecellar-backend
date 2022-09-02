@@ -9,7 +9,6 @@ const ProductSchema = new mongoose.Schema(
     userId: { type: String, required: true },
     vintage: { type: String, default: 'NC' },
     country: { type: String, default: 'NC' },
-    size: { type: String, default: 'NC' },
     type: { type: String, default: 'NC' },
     price: { type: Number, default: 0 },
     quantity: { type: Number, default: 1 },

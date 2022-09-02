@@ -14,6 +14,7 @@ uploadToCloudinary = (path, folder) => {
     })
     .catch((error) => {
       console.log(error);
+
     });
 };
 

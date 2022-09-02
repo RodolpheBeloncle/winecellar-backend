@@ -41,7 +41,6 @@ const productPostSchema = Joi.object({
   title: Joi.string().allow(null, '').required(),
   desc: Joi.string().allow(null, ''),
   vintage: Joi.string().allow(null, ''),
-  size: Joi.string().allow(null, ''),
   type: Joi.string().allow(null, ''),
   quantity: Joi.number().allow(null, ''),
   country: Joi.string().allow(null, ''),
@@ -50,74 +49,72 @@ const productPostSchema = Joi.object({
 });
 
 //Create New Product
-router.post('/new/:userId', verifyToken, upload, async (req, res) => {
+router.post('/new/:userId', verifyToken, async (req, res) => {
   const { value: newProduct, error } = productPostSchema.validate(req.body);
-
   if (error) {
     res.status(400).json(error);
   }
 
   try {
-    if (req.files === undefined) {
-      new Product({
-        ...newProduct,
-        userId: req.params.userId,
-      }).save();
-      res.status(201).json({
-        response: addProduct,
-        message: 'product created with success !',
-      });
-    } else if (req.files) {
-      const data = await uploadToCloudinary(req.file.path, 'product-images');
-      new Product({
-        ...newProduct,
-        userId: req.params.userId,
-        img: data.url,
-        publicId: data.public_id,
-      }).save();
+    let product = new Product({
+      ...newProduct,
+      userId: req.params.userId,
+    });
+    await product.save();
 
-      await unlinkAsync(req.file.path);
-      res.status(201).json({
-        response: addProduct,
-        message: 'product created with success !',
-      });
-    }
+    res.status(201).json({
+      message: 'Product Successfully added',
+    });
   } catch (err) {
     res.status(400).json(err);
   }
 });
 
-// update Product
-router.post('/update/:id', verifyToken, upload, async (req, res) => {
-  const ProductId = req.params.id;
-  if (!ObjectID.isValid(ProductId)) {
-    res.status(400).json(`ID: ${ProductId} unknown : `);
-  }
-
+// update Product image
+router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
   try {
-    if (req.file !== undefined) {
-      try {
-        // find product
-        const product = await Product.findOne({ _id: ProductId });
-        // find it's public_id
-        const publicId = product.publicId;
-        // remove img from cloudinary
-        await removeFromCloudinary(publicId);
-        // upload image from cloudinary
-        const data = await uploadToCloudinary(req.file.path, 'product-images');
-        await unlinkAsync(req.file.path);
-        await Product.findByIdAndUpdate(
-          { _id: ProductId },
-          {
-            $set: { img: data.url, publicId: data.public_id },
-          },
-          { new: true, upsert: true }
-        );
-      } catch (e) {
-        console.log('something went wrong');
-      }
-    }
+    let product = await Product.findById(req.params.id);
 
+    // upload image from cloudinary
+    const result = await uploadToCloudinary(req.file.path, 'product-images');
+
+    const data = {
+      img: result.url ? result.url : product.img,
+      publicId: result.public_id ? result.public_id : product.publicId,
+    };
+
+    updateProduct = await Product.findByIdAndUpdate(req.params.id, data, {
+      new: true,
+    });
+
+    // delete image from cloudinary
+    if (!product.publicId) {
+      return res.status(200).json({ message: 'succesfully updated' });
+    } else {
+      removeFromCloudinary(product.publicId);
+      unlinkAsync(req.file.path);
+      return res.status(200).json({ message: 'succesfully updated' });
+    }
+  } catch (error) {
+    res.status(400).json({ message: error });
+  }
+});
+
+// update Product
+router.put('/update/:id', verifyToken, async (req, res) => {
+  try {
+    let product = await Product.findById(req.params.id);
+
+    // const data = {
+    //   title: req.body.title,
+    //   desc: req.body.desc,
+    //   vintage: req.body.vintage,
+    //   type: req.body.type,
+    //   quantity: req.body.quantity,
+    //   country: req.body.country,
+    //   price: req.body.price,
+    //   content: req.body.content,
+    // };
     const entries = Object.keys(req.body);
     const updates = {};
 
@@ -127,20 +124,17 @@ router.post('/update/:id', verifyToken, upload, async (req, res) => {
       }
     }
 
-    try {
-      const updatedProduct = await Product.findOneAndUpdate(
-        { _id: ProductId },
-        { $set: updates },
-        { upsert: true, new: true }
-      );
+    const updatedProduct = await Product.findOneAndUpdate(
+      { _id: product.id },
+      { $set: updates },
+      { upsert: true, new: true }
+    );
 
-      res.status(200).json({ response: { ...updatedProduct } });
-    } catch {
-      console.log('something went wrong with the update');
-    }
+    res
+      .status(200)
+      .json({ message: 'succesfully updated', response: updatedProduct });
   } catch (error) {
-    console.log('test error', error);
-    res.status(400).json({ message: `something went wrong!: ${error}` });
+    res.status(400).json({ message: error });
   }
 });
 

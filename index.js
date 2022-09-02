@@ -29,11 +29,11 @@ app.use(cookieParser());
 //   cors({ credentials: true, origin: 'https://winecellar.rodolphebeloncle.com' })
 // );
 
-var whitelist = [
+let whitelist = [
   'https://winecellar.rodolphebeloncle.com',
   'http://localhost:3000',
 ];
-var corsOptions = {
+let corsOptions = {
   credentials: true,
   origin: function (origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {

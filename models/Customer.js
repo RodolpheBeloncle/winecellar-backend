@@ -25,7 +25,7 @@ const CustomerSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
-    img: { type: String, default: 'NC'},
+    img: { type: String, default: 'NC' },
     publicId: { type: String },
     userId: { type: String, required: true },
     country: {
@@ -39,5 +39,3 @@ const CustomerSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model('Customer', CustomerSchema);
-
-
