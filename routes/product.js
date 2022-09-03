@@ -89,6 +89,7 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
 
     // delete image from cloudinary
     if (!product.publicId) {
+      unlinkAsync(req.file.path);
       return res.status(200).json({ message: 'succesfully updated' });
     } else {
       removeFromCloudinary(product.publicId);
@@ -105,16 +106,6 @@ router.put('/update/:id', verifyToken, async (req, res) => {
   try {
     let product = await Product.findById(req.params.id);
 
-    // const data = {
-    //   title: req.body.title,
-    //   desc: req.body.desc,
-    //   vintage: req.body.vintage,
-    //   type: req.body.type,
-    //   quantity: req.body.quantity,
-    //   country: req.body.country,
-    //   price: req.body.price,
-    //   content: req.body.content,
-    // };
     const entries = Object.keys(req.body);
     const updates = {};
 
@@ -124,7 +115,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
       }
     }
 
-    const updatedProduct = await Product.findOneAndUpdate(
+    const updateProduct = await Product.findOneAndUpdate(
       { _id: product.id },
       { $set: updates },
       { upsert: true, new: true }
@@ -132,7 +123,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
 
     res
       .status(200)
-      .json({ message: 'succesfully updated', response: updatedProduct });
+      .json({ message: 'succesfully updated', response: updateProduct });
   } catch (error) {
     res.status(400).json({ message: error });
   }

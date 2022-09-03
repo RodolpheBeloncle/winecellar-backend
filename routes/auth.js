@@ -87,7 +87,7 @@ router.post('/login', async (req, res) => {
         isAdmin: user.isAdmin,
       },
       process.env.TOKEN_SECRET,
-      { expiresIn: '3d' }
+      { expiresIn: '1d' }
     );
 
     res.cookie('token', accessToken, {

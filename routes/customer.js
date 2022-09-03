@@ -61,13 +61,15 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
     });
 
     // delete image from cloudinary
-    if (!customer.publicId) {
+    if (!product.publicId) {
+      unlinkAsync(req.file.path);
       return res.status(200).json({ message: 'succesfully updated' });
     } else {
-      removeFromCloudinary(customer.publicId);
+      removeFromCloudinary(product.publicId);
       unlinkAsync(req.file.path);
       return res.status(200).json({ message: 'succesfully updated' });
     }
+    
   } catch (error) {
     res.status(400).json({ message: error });
   }
@@ -78,18 +80,22 @@ router.put('/update/:id', verifyToken, async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
 
-    const data = {
-      customerName: req.body.customerName,
-      email: req.body.email,
-      phone: req.body.phone,
-      adress: req.body.address,
-      country: req.body.country,
-    };
+    const entries = Object.keys(req.body);
+    const updates = {};
 
-    updateCustomer = await Customer.findByIdAndUpdate(customer.id, data, {
-      new: true,
-    });
-    res.status(200).json({ message: 'succesfully updated' });
+    for (let i = 0; i < entries.length; i++) {
+      if (Object.values(req.body)[i] !== '') {
+        updates[entries[i]] = Object.values(req.body)[i];
+      }
+    }
+
+    const updateCustomer = await Customer.findOneAndUpdate(
+      { _id: customer.id },
+      { $set: updates },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({ message: 'succesfully updated',response: updateCustomer});
   } catch (error) {
     res.status(400).json({ message: error });
   }
