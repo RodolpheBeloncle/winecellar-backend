@@ -69,7 +69,7 @@ router.post('/new/:userId', verifyToken, async (req, res) => {
   }
 });
 
-// update Customer file
+// update Customer image
 router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
@@ -78,16 +78,16 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
     const result = await uploadToCloudinary(req.file.path, 'customer-images');
 
     const data = {
-      img: result.url ? result.url : customer.img,
+      img: result.url ? result.url : product.img,
       publicId: result.public_id ? result.public_id : customer.publicId,
     };
 
-    updateCustomer = await Customer.findByIdAndUpdate(req.params.id, data, {
+    updateCustomer = await  Customer.findByIdAndUpdate(req.params.id, data, {
       new: true,
     });
 
     // delete image from cloudinary
-    if (!product.publicId) {
+    if (!customer.publicId) {
       unlinkAsync(req.file.path);
       return res.status(200).json({ message: 'successfully updated' });
     } else {
@@ -95,13 +95,12 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
       unlinkAsync(req.file.path);
       return res.status(200).json({ message: 'successfully updated' });
     }
-    
   } catch (error) {
     res.status(400).json({ message: error });
   }
 });
 
-// update data customer
+// update Customer
 router.put('/update/:id', verifyToken, async (req, res) => {
   try {
     let customer = await Customer.findById(req.params.id);
@@ -121,12 +120,13 @@ router.put('/update/:id', verifyToken, async (req, res) => {
       { upsert: true, new: true }
     );
 
-    res.status(200).json({ message: 'Successfully updated',response: updateCustomer});
+    res
+      .status(200)
+      .json({ message: 'Successfully updated', response: updateCustomer });
   } catch (error) {
     res.status(400).json({ message: error });
   }
 });
-
 
 //DELETE
 router.delete('/:id', verifyToken, async (req, res) => {
