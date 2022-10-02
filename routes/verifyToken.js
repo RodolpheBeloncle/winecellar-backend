@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+// authentification token middleware
 const verifyToken = (req, res, next) => {
   const cookies = req.header.cookie || false;
   if (cookies) {

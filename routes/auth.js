@@ -90,8 +90,9 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1d' }
     );
 
+    // send back jwt token in cookie header
     res.cookie('token', accessToken, {
-      expires  : new Date(Date.now() + 9999999),
+      expires  : new Date(Date.now() + 7),
       httpOnly : true
     });
 

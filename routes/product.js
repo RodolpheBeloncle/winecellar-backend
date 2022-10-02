@@ -90,11 +90,11 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
     // delete image from cloudinary
     if (!product.publicId) {
       unlinkAsync(req.file.path);
-      return res.status(200).json({ message: 'succesfully updated' });
+      return res.status(200).json({ message: 'successfully updated' });
     } else {
       removeFromCloudinary(product.publicId);
       unlinkAsync(req.file.path);
-      return res.status(200).json({ message: 'succesfully updated' });
+      return res.status(200).json({ message: 'successfully updated' });
     }
   } catch (error) {
     res.status(400).json({ message: error });

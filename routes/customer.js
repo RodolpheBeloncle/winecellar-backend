@@ -63,11 +63,11 @@ router.put('/uploadFile/:id', verifyToken, upload, async (req, res) => {
     // delete image from cloudinary
     if (!product.publicId) {
       unlinkAsync(req.file.path);
-      return res.status(200).json({ message: 'succesfully updated' });
+      return res.status(200).json({ message: 'successfully updated' });
     } else {
-      removeFromCloudinary(product.publicId);
+      removeFromCloudinary(customer.publicId);
       unlinkAsync(req.file.path);
-      return res.status(200).json({ message: 'succesfully updated' });
+      return res.status(200).json({ message: 'successfully updated' });
     }
     
   } catch (error) {
@@ -108,13 +108,13 @@ router.delete('/:id', async (req, res) => {
     const customer = await Customer.findById(req.params.id);
     if (customer.img === 'NC' || !customer.publicId) {
       await Customer.findByIdAndDelete(req.params.id);
-      res.status(200).json('Customer has been deleted...');
+      res.status(200).json('Customer has been deleted !');
     } else {
       // remove img from cloudinary
       await removeFromCloudinary(customer.publicId);
       await customer.remove();
       await unlinkAsync(req.file.path);
-      res.status(200).json('Customer has been deleted...');
+      res.status(200).json('Customer has been deleted !');
     }
   } catch (err) {
     res.status(500).json(err);
