@@ -18,6 +18,32 @@ const inputValidator = Joi.object({
   country: Joi.string().allow(null, ''),
 });
 
+//GET Customer
+router.get('/find/:id', async (req, res) => {
+  try {
+    const Customer = await Customer.findById(req.params.id);
+    const { ...others } = Customer._doc;
+    res.status(200).json(others);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+//GET ALL Customer
+router.get('/:userId', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const getCustomersList = await Customer.aggregate([
+      {
+        $match: { userId: userId },
+      },
+    ]);
+    res.status(200).json(getCustomersList);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 // create new customer
 router.post('/new/:userId', verifyToken, async (req, res) => {
   const { value: newCustomer, error } = inputValidator.validate(req.body);
@@ -101,57 +127,30 @@ router.put('/update/:id', verifyToken, async (req, res) => {
   }
 });
 
+
 //DELETE
-router.delete('/:id',verifyToken, async (req, res) => {
+router.delete('/:id', verifyToken, async (req, res) => {
   try {
     // find customer
-    const customer = await Customer.findOne(req.params.id);
-    if (customer.img === 'NC' || !customer.publicId) {
-      await Customer.deleteOne(req.params.id).then(() => {
-        res.status(200).json('Customer has been deleted !');
-      })
+    const customer = await Customer.findOne({ _id: req.params.id });
+
+    if (customer.img === 'NC') {
+      await Customer.findByIdAndDelete(req.params.id);
+      res.status(200).json('Customer has been deleted !');
     } else {
-
-       // find it's public_id
-       const publicId = customer.publicId;
-
+      // find it's public_id
+      const publicId = customer.publicId;
       // remove img from cloudinary
       await removeFromCloudinary(publicId);
 
-
-      await customer.findByIdAndDelete(req.params.id).then(()=> {
-        res.status(200).json('Customer has been deleted !');
-      })
+      await Customer.findByIdAndDelete(req.params.id);
+      res.status(200).json('Customer has been deleted !');
     }
   } catch (err) {
     res.status(500).json(err);
   }
 });
 
-//GET Customer
-router.get('/find/:id', async (req, res) => {
-  try {
-    const Customer = await Customer.findById(req.params.id);
-    const { ...others } = Customer._doc;
-    res.status(200).json(others);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
 
-//GET ALL Customer
-router.get('/:userId', async (req, res) => {
-  const userId = req.params.userId;
-  try {
-    const getCustomersList = await Customer.aggregate([
-      {
-        $match: { userId: userId },
-      },
-    ]);
-    res.status(200).json(getCustomersList);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
 
 module.exports = router;
