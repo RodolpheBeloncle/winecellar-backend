@@ -123,7 +123,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
 
     res
       .status(200)
-      .json({ message: 'succesfully updated', response: updateProduct });
+      .json({ message: 'Successfully updated', response: updateProduct });
   } catch (error) {
     res.status(400).json({ message: error });
   }

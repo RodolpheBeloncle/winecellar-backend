@@ -95,7 +95,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
       { upsert: true, new: true }
     );
 
-    res.status(200).json({ message: 'succesfully updated',response: updateCustomer});
+    res.status(200).json({ message: 'Successfully updated',response: updateCustomer});
   } catch (error) {
     res.status(400).json({ message: error });
   }
@@ -105,15 +105,20 @@ router.put('/update/:id', verifyToken, async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     // find customer
-    const customer = await Customer.findById(req.params.id);
+    const customer = await Customer.findOne(req.params.id);
     if (customer.img === 'NC' || !customer.publicId) {
       await Customer.findByIdAndDelete(req.params.id);
       res.status(200).json('Customer has been deleted !');
     } else {
+
+       // find it's public_id
+       const publicId = customer.publicId;
+
       // remove img from cloudinary
-      await removeFromCloudinary(customer.publicId);
-      await customer.remove();
-      await unlinkAsync(req.file.path);
+      await removeFromCloudinary(publicId);
+
+
+      await customer.findByIdAndDelete(req.params.id);
       res.status(200).json('Customer has been deleted !');
     }
   } catch (err) {
