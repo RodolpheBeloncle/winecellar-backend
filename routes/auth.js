@@ -29,33 +29,33 @@ const schemaLogin = Joi.object({
   password: Joi.string().pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')).required(),
 });
 
-router.post('/register', async (req, res) => {
-  try {
-    const { value: newUser, error } = schemaRegister.validate(req.body);
+// router.post('/register', async (req, res) => {
+//   try {
+//     const { value: newUser, error } = schemaRegister.validate(req.body);
 
-    if (error) {
-      return res.status(400).json(error);
-    }
-    const isUserExist = await User.findOne({ email: newUser.email });
+//     if (error) {
+//       return res.status(400).json(error);
+//     }
+//     const isUserExist = await User.findOne({ email: newUser.email });
 
-    if (isUserExist) {
-      res.status(403).json({
-        message: 'user already exist',
-      });
-    }
-    const createUser = new User({
-      ...req.body,
-      password: await argon2.hash(req.body.password),
-    });
+//     if (isUserExist) {
+//       res.status(403).json({
+//         message: 'user already exist',
+//       });
+//     }
+//     const createUser = new User({
+//       ...req.body,
+//       password: await argon2.hash(req.body.password),
+//     });
 
-    await createUser.save();
-    res.status(201).json({
-      message: "'Successfully registered 😏 🍀'",
-    });
-  } catch (err) {
-    res.status(500).json({ message: err });
-  }
-});
+//     await createUser.save();
+//     res.status(201).json({
+//       message: "'Successfully registered 😏 🍀'",
+//     });
+//   } catch (err) {
+//     res.status(500).json({ message: err });
+//   }
+// });
 
 router.post('/login', async (req, res) => {
   try {
