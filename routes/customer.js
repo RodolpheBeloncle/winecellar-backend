@@ -107,8 +107,9 @@ router.delete('/:id',verifyToken, async (req, res) => {
     // find customer
     const customer = await Customer.findOne(req.params.id);
     if (customer.img === 'NC' || !customer.publicId) {
-      await Customer.findByIdAndDelete(req.params.id);
-      res.status(200).json('Customer has been deleted !');
+      await Customer.deleteOne(req.params.id).then(() => {
+        res.status(200).json('Customer has been deleted !');
+      })
     } else {
 
        // find it's public_id
@@ -118,8 +119,9 @@ router.delete('/:id',verifyToken, async (req, res) => {
       await removeFromCloudinary(publicId);
 
 
-      await customer.findByIdAndDelete(req.params.id);
-      res.status(200).json('Customer has been deleted !');
+      await customer.findByIdAndDelete(req.params.id).then(()=> {
+        res.status(200).json('Customer has been deleted !');
+      })
     }
   } catch (err) {
     res.status(500).json(err);
